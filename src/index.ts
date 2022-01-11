@@ -233,17 +233,15 @@ async function main() {
     guess.split("").forEach((letter, index) => {
       let inArray = false
       let wrongPosition = false
-      let letterNotAlreadyCorrect =
-        state.lettersInPosition.filter(
-          (lip, lipIndex) => lip === letter && lipIndex === index
-        ).length === 0
       if (
         formattedWrong !== "none" &&
         formattedWrong !== "all" &&
         formattedWrong.some(
           (val) => val.letter === letter && val.index === index
         ) &&
-        letterNotAlreadyCorrect
+        state.lettersInPosition.filter(
+          (lip, lipIndex) => lip === letter && lipIndex === index
+        ).length === 0
       ) {
         dispatch({
           type: "addUsedLetterWrongPosition",
