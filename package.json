@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "filter": "ts-node new_words"
+    "weights": "ts-node src/weights.ts",
+    "start": "ts-node src/index.ts"
   },
   "devDependencies": {
     "@types/inquirer": "^8.1.3",
