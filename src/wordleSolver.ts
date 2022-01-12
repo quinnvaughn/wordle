@@ -1,3 +1,4 @@
+import { Commands } from "./commands"
 import type {
   Index,
   Word,
@@ -163,11 +164,11 @@ export class WordleSolver {
     return word.split(letter, occurence).join(letter).length
   }
 
-  private formatRight(word: string, guess: string): FormattedCorrect {
-    return word === "none"
-      ? "none"
-      : word === "all"
-      ? "all"
+  private formatCorrect(word: string, guess: string): FormattedCorrect {
+    return word === Commands.none
+      ? Commands.none
+      : word === Commands.all
+      ? Commands.all
       : word
           .split(" ")
           .filter(Boolean)
@@ -181,9 +182,12 @@ export class WordleSolver {
           )
   }
 
-  private formatWrong(word: string, guess: string): FormattedIncorrectPosition {
-    return word === "none"
-      ? "none"
+  private formatIncorrectPosition(
+    word: string,
+    guess: string
+  ): FormattedIncorrectPosition {
+    return word === Commands.none
+      ? Commands.none
       : word
           .split(" ")
           .filter(Boolean)
@@ -202,7 +206,8 @@ export class WordleSolver {
     usedString: string,
     guess: string
   ): UserInputValidation {
-    if (usedString === "all" || usedString === "none") return { type: "ok" }
+    if (usedString === Commands.all || usedString === Commands.none)
+      return { type: "ok" }
     const incorrectLetters: string[] = []
     usedString.split(" ").forEach((letter) => {
       if (!guess.includes(letter)) incorrectLetters.push(letter)
@@ -223,7 +228,11 @@ export class WordleSolver {
     let tooLongOfLetter: string = ""
 
     usedString.split(" ").every((letter) => {
-      if (letter.length !== 1 && letter !== "all" && letter !== "none") {
+      if (
+        letter.length !== 1 &&
+        letter !== Commands.all &&
+        letter !== Commands.none
+      ) {
         tooLongOfLetter = letter
         return false
       }
@@ -289,13 +298,13 @@ export class WordleSolver {
       return errorCheck
     }
     // get correct format for incorrectPosition and correct
-    const FormattedIncorrectPosition = this.formatWrong(
+    const FormattedIncorrectPosition = this.formatIncorrectPosition(
       incorrectPosition,
       guess
     )
-    const FormattedCorrect = this.formatRight(correct, guess)
+    const FormattedCorrect = this.formatCorrect(correct, guess)
 
-    if (FormattedCorrect === "all") {
+    if (FormattedCorrect === Commands.all) {
       this.userWon()
       return { type: "ok" }
     }
@@ -312,7 +321,7 @@ export class WordleSolver {
       let inArray = false
       let wrongPosition = false
       if (
-        FormattedIncorrectPosition !== "none" &&
+        FormattedIncorrectPosition !== Commands.none &&
         FormattedIncorrectPosition.some(
           (val) => val.letter === letter && val.index === index
         ) &&
@@ -325,8 +334,8 @@ export class WordleSolver {
         wrongPosition = true
       }
       if (
-        FormattedCorrect !== "none" &&
-        FormattedCorrect !== "all" &&
+        FormattedCorrect !== Commands.none &&
+        FormattedCorrect !== Commands.all &&
         FormattedCorrect.some(
           (val) => val.letter === letter && val.index === index
         ) &&

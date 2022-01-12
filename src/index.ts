@@ -1,10 +1,7 @@
 import inquirer from "inquirer"
+import { Commands } from "./commands"
 import type { UserInput } from "./types"
 import { WordleSolver } from "./wordleSolver"
-
-// TODO: Add check for bad input.
-// Don't add another guess if they input poorly,
-// just make them redo it.
 
 // TODO: Add "same" command if either used wrong or used right
 // has not changed since last attempt.
@@ -45,7 +42,7 @@ async function main() {
       input = (await inquirer.prompt(prompts)) as UserInput
       feedback = solver.addGuess(input)
     }
-    if (input.correct !== "all" || solver.oneWordLeft()) {
+    if (input.correct !== Commands.all || solver.oneWordLeft()) {
       solver.outputSuggestionToConsole()
     }
   }
