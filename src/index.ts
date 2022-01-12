@@ -1,5 +1,5 @@
 import inquirer from "inquirer"
-import type { Response } from "./types"
+import type { UserInput } from "./types"
 import { WordleSolver } from "./wordleSolver"
 
 // TODO: Add check for bad input.
@@ -16,13 +16,13 @@ const prompts = [
   { type: "input", name: "guess", message: "What is your guess?" },
   {
     type: "input",
-    name: "usedWrong",
-    message: "Which letters are used but not in the right spot?",
+    name: "incorrectPosition",
+    message: "Which letters are in the incorrect position?",
   },
   {
     type: "input",
-    name: "usedRight",
-    message: "Which letters are used and in the right spot?",
+    name: "correct",
+    message: "Which letters are correct?",
   },
 ]
 
@@ -36,16 +36,16 @@ async function main() {
   const solver = new WordleSolver()
   solver.outputSuggestionToConsole()
   while (!solver.correct && solver.numGuesses < 6) {
-    let response = (await inquirer.prompt(prompts)) as Response
+    let input = (await inquirer.prompt(prompts)) as UserInput
 
-    let feedback = solver.addGuess(response)
+    let feedback = solver.addGuess(input)
     // keep looping through until they give correct input.
     while (feedback.type === "error") {
       console.error(feedback.message)
-      response = (await inquirer.prompt(prompts)) as Response
-      feedback = solver.addGuess(response)
+      input = (await inquirer.prompt(prompts)) as UserInput
+      feedback = solver.addGuess(input)
     }
-    if (response.usedRight !== "all" || solver.oneWordLeft()) {
+    if (input.correct !== "all" || solver.oneWordLeft()) {
       solver.outputSuggestionToConsole()
     }
   }

@@ -1,13 +1,13 @@
 import type {
   Index,
   Word,
-  Response,
-  FormattedRight,
-  FormattedWrong,
+  UserInput,
+  FormattedCorrect,
+  FormattedIncorrectPosition,
 } from "./types"
 import weightedWords from "./words_with_weights.json"
 
-type GuessResponse = { type: "ok" } | { type: "error"; message: string }
+type UserInputValidation = { type: "ok" } | { type: "error"; message: string }
 
 export class WordleSolver {
   private _wordsLeft: Word[]
@@ -163,7 +163,7 @@ export class WordleSolver {
     return word.split(letter, occurence).join(letter).length
   }
 
-  private formatRight(word: string, guess: string): FormattedRight {
+  private formatRight(word: string, guess: string): FormattedCorrect {
     return word === "none"
       ? "none"
       : word === "all"
@@ -181,7 +181,7 @@ export class WordleSolver {
           )
   }
 
-  private formatWrong(word: string, guess: string): FormattedWrong {
+  private formatWrong(word: string, guess: string): FormattedIncorrectPosition {
     return word === "none"
       ? "none"
       : word
@@ -201,7 +201,7 @@ export class WordleSolver {
     type: "wrong" | "right",
     usedString: string,
     guess: string
-  ): GuessResponse {
+  ): UserInputValidation {
     if (usedString === "all" || usedString === "none") return { type: "ok" }
     const incorrectLetters: string[] = []
     usedString.split(" ").forEach((letter) => {
@@ -219,7 +219,7 @@ export class WordleSolver {
     return { type: "ok" }
   }
 
-  private letterLengthChecker(usedString: string): GuessResponse {
+  private letterLengthChecker(usedString: string): UserInputValidation {
     let tooLongOfLetter: string = ""
 
     usedString.split(" ").every((letter) => {
@@ -241,23 +241,23 @@ export class WordleSolver {
 
   private checkInputErrors({
     guess,
-    usedRight,
-    usedWrong,
-  }: Response): GuessResponse {
+    correct,
+    incorrectPosition,
+  }: UserInput): UserInputValidation {
     if (guess.length !== 5) {
       return { type: "error", message: "Guess must be 5 letters." }
     }
-    const incorrectLetterWrong = this.letterLengthChecker(usedWrong)
+    const incorrectLetterWrong = this.letterLengthChecker(incorrectPosition)
     if (incorrectLetterWrong.type === "error") {
       return incorrectLetterWrong
     }
-    const incorrectLetterRight = this.letterLengthChecker(usedRight)
+    const incorrectLetterRight = this.letterLengthChecker(correct)
     if (incorrectLetterRight.type === "error") {
       return incorrectLetterRight
     }
     const incorrectUsedWrong = this.incorrectLetterChecker(
       "wrong",
-      usedWrong,
+      incorrectPosition,
       guess
     )
     if (incorrectUsedWrong.type === "error") {
@@ -265,7 +265,7 @@ export class WordleSolver {
     }
     const incorrectUsedRight = this.incorrectLetterChecker(
       "right",
-      usedRight,
+      correct,
       guess
     )
     if (incorrectUsedRight.type === "error") {
@@ -274,35 +274,46 @@ export class WordleSolver {
     return { type: "ok" }
   }
 
-  public addGuess({ guess, usedRight, usedWrong }: Response): GuessResponse {
+  public addGuess({
+    guess,
+    correct,
+    incorrectPosition,
+  }: UserInput): UserInputValidation {
     // error checking
-    const errorCheck = this.checkInputErrors({ guess, usedRight, usedWrong })
+    const errorCheck = this.checkInputErrors({
+      guess,
+      correct,
+      incorrectPosition,
+    })
     if (errorCheck.type === "error") {
       return errorCheck
     }
-    // get correct format for usedWrong and usedRight
-    const formattedWrong = this.formatWrong(usedWrong, guess)
-    const formattedRight = this.formatRight(usedRight, guess)
+    // get correct format for incorrectPosition and correct
+    const FormattedIncorrectPosition = this.formatWrong(
+      incorrectPosition,
+      guess
+    )
+    const FormattedCorrect = this.formatRight(correct, guess)
 
-    if (formattedRight === "all") {
+    if (FormattedCorrect === "all") {
       this.userWon()
       return { type: "ok" }
     }
-    this.loopThroughLetters(guess, formattedWrong, formattedRight)
+    this.loopThroughLetters(guess, FormattedIncorrectPosition, FormattedCorrect)
     return { type: "ok" }
   }
 
   private loopThroughLetters(
     guess: string,
-    formattedWrong: FormattedWrong,
-    formattedRight: FormattedRight
+    FormattedIncorrectPosition: FormattedIncorrectPosition,
+    FormattedCorrect: FormattedCorrect
   ) {
     guess.split("").forEach((letter, index) => {
       let inArray = false
       let wrongPosition = false
       if (
-        formattedWrong !== "none" &&
-        formattedWrong.some(
+        FormattedIncorrectPosition !== "none" &&
+        FormattedIncorrectPosition.some(
           (val) => val.letter === letter && val.index === index
         ) &&
         this._lettersInPosition.filter(
@@ -314,9 +325,9 @@ export class WordleSolver {
         wrongPosition = true
       }
       if (
-        formattedRight !== "none" &&
-        formattedRight !== "all" &&
-        formattedRight.some(
+        FormattedCorrect !== "none" &&
+        FormattedCorrect !== "all" &&
+        FormattedCorrect.some(
           (val) => val.letter === letter && val.index === index
         ) &&
         !wrongPosition

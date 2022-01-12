@@ -1,7 +1,7 @@
-export type Response = {
+export type UserInput = {
   guess: string
-  usedWrong: string
-  usedRight: string
+  incorrectPosition: string
+  correct: string
 }
 
 export type Word = {
@@ -14,6 +14,6 @@ export type Index = {
   letter: string
 }
 
-export type FormattedRight = "none" | "all" | Index[]
+export type FormattedCorrect = "none" | "all" | Index[]
 
-export type FormattedWrong = "none" | Index[]
+export type FormattedIncorrectPosition = "none" | Index[]

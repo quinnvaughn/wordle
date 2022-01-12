@@ -36,7 +36,7 @@ describe("Wordle Solver", () => {
     test("adds one guess correctly", () => {
       const solver = new WordleSolver(fakeWeights)
 
-      solver.addGuess({ guess: "aeiou", usedRight: "", usedWrong: "o" })
+      solver.addGuess({ guess: "aeiou", correct: "", incorrectPosition: "o" })
 
       expect(solver.suggestion).toBe("gross")
       expect(solver.correct).toBe(false)
@@ -52,7 +52,7 @@ describe("Wordle Solver", () => {
       // actual word = nobby
       const solver = new WordleSolver(fakeWeights)
 
-      solver.addGuess({ guess: "aeiou", usedRight: "", usedWrong: "o" })
+      solver.addGuess({ guess: "aeiou", correct: "", incorrectPosition: "o" })
 
       expect(solver.suggestion).toBe("gross")
       expect(solver.correct).toBe(false)
@@ -64,7 +64,7 @@ describe("Wordle Solver", () => {
         { index: 3, letter: "o" },
       ])
 
-      solver.addGuess({ guess: "gross", usedRight: "", usedWrong: "o" })
+      solver.addGuess({ guess: "gross", correct: "", incorrectPosition: "o" })
       expect(solver.suggestion).toBe("nobby")
       expect(solver.correct).toBe(true)
       expect(solver.lettersInPosition).toEqual([null, null, null, null, null])
@@ -82,8 +82,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "bingbong",
-        usedRight: "",
-        usedWrong: "",
+        correct: "",
+        incorrectPosition: "",
       })
 
       expect(feedback.type).toBe("error")
@@ -96,8 +96,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "",
-        usedWrong: "l",
+        correct: "",
+        incorrectPosition: "l",
       })
 
       expect(feedback.type).toBe("error")
@@ -110,8 +110,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "",
-        usedWrong: "l o",
+        correct: "",
+        incorrectPosition: "l o",
       })
 
       expect(feedback.type).toBe("error")
@@ -124,8 +124,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "l",
-        usedWrong: "",
+        correct: "l",
+        incorrectPosition: "",
       })
 
       expect(feedback.type).toBe("error")
@@ -138,8 +138,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "l o",
-        usedWrong: "",
+        correct: "l o",
+        incorrectPosition: "",
       })
 
       expect(feedback.type).toBe("error")
@@ -152,8 +152,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "",
-        usedWrong: "as",
+        correct: "",
+        incorrectPosition: "as",
       })
 
       expect(feedback.type).toBe("error")
@@ -166,8 +166,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "as",
-        usedWrong: "",
+        correct: "as",
+        incorrectPosition: "",
       })
 
       expect(feedback.type).toBe("error")
@@ -182,8 +182,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "",
-        usedWrong: "none",
+        correct: "",
+        incorrectPosition: "none",
       })
 
       expect(feedback.type).toBe("ok")
@@ -193,8 +193,8 @@ describe("Wordle Solver", () => {
       const solver = new WordleSolver(fakeWeights)
       const feedback = solver.addGuess({
         guess: "guess",
-        usedRight: "all",
-        usedWrong: "",
+        correct: "all",
+        incorrectPosition: "",
       })
 
       expect(feedback.type).toBe("ok")
