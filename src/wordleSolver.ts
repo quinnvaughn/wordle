@@ -7,6 +7,8 @@ import type {
 } from "./types"
 import weightedWords from "./words_with_weights.json"
 
+type GuessResponse = { type: "ok" } | { type: "error"; message: string }
+
 export class WordleSolver {
   private _wordsLeft: Word[]
   private _notUsedLetters: string[] = []
@@ -22,9 +24,8 @@ export class WordleSolver {
   private _correct: boolean = false
   private _suggestion?: string
 
-  constructor(words?: Word[]) {
-    this._wordsLeft =
-      typeof words !== "undefined" && words.length > 0 ? words : weightedWords
+  constructor(words: Word[] = weightedWords) {
+    this._wordsLeft = words
     this._suggestion = this._wordsLeft[0].word
   }
 
@@ -36,8 +37,29 @@ export class WordleSolver {
     return this._numGuesses
   }
 
+  get notUsedLetters() {
+    return this._notUsedLetters
+  }
+
+  get usedLettersWrongPosition() {
+    return this._usedLettersWrongPosition
+  }
+
+  get lettersInPosition() {
+    return this._lettersInPosition
+  }
+
+  get suggestion() {
+    return this._suggestion
+  }
+
   public oneWordLeft() {
     return this._wordsLeft.length === 1
+  }
+
+  public outputSuggestionToConsole() {
+    console.log(`Suggested word: ${this._suggestion}`)
+    console.log(`Possible words left: ${this._wordsLeft.length}`)
   }
 
   private userWon() {
@@ -96,7 +118,12 @@ export class WordleSolver {
   }
 
   private addNotUsedLetter(letter: string) {
-    this._notUsedLetters.push(letter)
+    // array already contains letter.
+    if (this._notUsedLetters.includes(letter)) {
+      return
+    } else {
+      this._notUsedLetters.push(letter)
+    }
   }
 
   private setPositionLetter(letter: string, index: number) {
@@ -170,28 +197,107 @@ export class WordleSolver {
           )
   }
 
-  public suggestWord() {
-    console.log("Suggested word: ", this._suggestion)
+  private incorrectLetterChecker(
+    type: "wrong" | "right",
+    usedString: string,
+    guess: string
+  ): GuessResponse {
+    if (usedString === "all" || usedString === "none") return { type: "ok" }
+    const incorrectLetters: string[] = []
+    usedString.split(" ").forEach((letter) => {
+      if (!guess.includes(letter)) incorrectLetters.push(letter)
+    })
+    if (incorrectLetters.length > 0) {
+      const plural = incorrectLetters.length === 1 ? "letter" : "letters"
+      return {
+        type: "error",
+        message: `Guess does not contain ${plural} ${incorrectLetters.join(
+          ","
+        )} in used ${type === "wrong" ? "but incorrect" : "and correct"} spot.`,
+      }
+    }
+    return { type: "ok" }
   }
 
-  public addGuess(response: Response) {
+  private letterLengthChecker(usedString: string): GuessResponse {
+    let tooLongOfLetter: string = ""
+
+    usedString.split(" ").every((letter) => {
+      if (letter.length !== 1 && letter !== "all" && letter !== "none") {
+        tooLongOfLetter = letter
+        return false
+      }
+      return true
+    })
+    if (tooLongOfLetter.length > 0) {
+      return {
+        type: "error",
+        message: `${tooLongOfLetter} is not a letter. Make sure to put spaces between letters.`,
+      }
+    } else {
+      return { type: "ok" }
+    }
+  }
+
+  private checkInputErrors({
+    guess,
+    usedRight,
+    usedWrong,
+  }: Response): GuessResponse {
+    if (guess.length !== 5) {
+      return { type: "error", message: "Guess must be 5 letters." }
+    }
+    const incorrectLetterWrong = this.letterLengthChecker(usedWrong)
+    if (incorrectLetterWrong.type === "error") {
+      return incorrectLetterWrong
+    }
+    const incorrectLetterRight = this.letterLengthChecker(usedRight)
+    if (incorrectLetterRight.type === "error") {
+      return incorrectLetterRight
+    }
+    const incorrectUsedWrong = this.incorrectLetterChecker(
+      "wrong",
+      usedWrong,
+      guess
+    )
+    if (incorrectUsedWrong.type === "error") {
+      return incorrectUsedWrong
+    }
+    const incorrectUsedRight = this.incorrectLetterChecker(
+      "right",
+      usedRight,
+      guess
+    )
+    if (incorrectUsedRight.type === "error") {
+      return incorrectUsedRight
+    }
+    return { type: "ok" }
+  }
+
+  public addGuess({ guess, usedRight, usedWrong }: Response): GuessResponse {
+    // error checking
+    const errorCheck = this.checkInputErrors({ guess, usedRight, usedWrong })
+    if (errorCheck.type === "error") {
+      return errorCheck
+    }
     // get correct format for usedWrong and usedRight
-    const formattedWrong = this.formatWrong(response.usedWrong, response.guess)
-    const formattedRight = this.formatRight(response.usedRight, response.guess)
+    const formattedWrong = this.formatWrong(usedWrong, guess)
+    const formattedRight = this.formatRight(usedRight, guess)
 
     if (formattedRight === "all") {
       this.userWon()
-      return
+      return { type: "ok" }
     }
-    this.loopThroughLetters(response, formattedWrong, formattedRight)
+    this.loopThroughLetters(guess, formattedWrong, formattedRight)
+    return { type: "ok" }
   }
 
   private loopThroughLetters(
-    response: Response,
+    guess: string,
     formattedWrong: FormattedWrong,
     formattedRight: FormattedRight
   ) {
-    response.guess.split("").forEach((letter, index) => {
+    guess.split("").forEach((letter, index) => {
       let inArray = false
       let wrongPosition = false
       if (
