@@ -23,7 +23,7 @@ export class WordleSolver {
     string | null
   ] = [null, null, null, null, null]
   private _correct: boolean = false
-  private _suggestion?: string
+  private _suggestion: string
 
   constructor(words: Word[] = weightedWords) {
     this._wordsLeft = words
@@ -120,7 +120,11 @@ export class WordleSolver {
 
   private addNotUsedLetter(letter: string) {
     // array already contains letter.
-    if (this._notUsedLetters.includes(letter)) {
+    if (
+      this._notUsedLetters.includes(letter) ||
+      this._usedLettersWrongPosition.some((wp) => wp.letter === letter) ||
+      this._lettersInPosition.includes(letter)
+    ) {
       return
     } else {
       this._notUsedLetters.push(letter)
@@ -135,7 +139,15 @@ export class WordleSolver {
   }
 
   private addUsedLetterWrongPosition(letter: string, index: number) {
-    this._usedLettersWrongPosition.push({ letter, index })
+    if (
+      this._usedLettersWrongPosition.some(
+        (wp) => wp.index === index && wp.letter === letter
+      )
+    ) {
+      return
+    } else {
+      this._usedLettersWrongPosition.push({ letter, index })
+    }
   }
 
   private updateSuggestion() {
@@ -289,26 +301,26 @@ export class WordleSolver {
     incorrectPosition,
   }: UserInput): UserInputValidation {
     // error checking
-    const errorCheck = this.checkInputErrors({
-      guess,
-      correct,
-      incorrectPosition,
-    })
-    if (errorCheck.type === "error") {
-      return errorCheck
-    }
+    // const errorCheck = this.checkInputErrors({
+    //   guess,
+    //   correct,
+    //   incorrectPosition,
+    // })
+    // if (errorCheck.type === "error") {
+    //   return errorCheck
+    // }
     // get correct format for incorrectPosition and correct
-    const FormattedIncorrectPosition = this.formatIncorrectPosition(
+    const formattedIncorrectPosition = this.formatIncorrectPosition(
       incorrectPosition,
       guess
     )
-    const FormattedCorrect = this.formatCorrect(correct, guess)
+    const formattedCorrect = this.formatCorrect(correct, guess)
 
-    if (FormattedCorrect === Commands.all) {
+    if (formattedCorrect === Commands.all) {
       this.userWon()
       return { type: "ok" }
     }
-    this.loopThroughLetters(guess, FormattedIncorrectPosition, FormattedCorrect)
+    this.loopThroughLetters(guess, formattedIncorrectPosition, formattedCorrect)
     return { type: "ok" }
   }
 

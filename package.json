@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "accuracy": "ts-node src/accuracy.ts",
     "weights": "ts-node src/weights.ts",
     "start": "ts-node src/index.ts",
     "test": "jest"
