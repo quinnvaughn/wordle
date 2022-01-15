@@ -76,10 +76,13 @@ function accuracy() {
     }
   }
 
-  fs.writeFileSync("numGuesses.json", JSON.stringify(numGuessesMap, null, 2))
+  fs.writeFileSync(
+    "data/numGuesses.json",
+    JSON.stringify(numGuessesMap, null, 2)
+  )
 
   fs.writeFileSync(
-    "incorrectWords.json",
+    "data/incorrectWords.json",
     JSON.stringify(incorrectWords, null, 2)
   )
 
@@ -88,7 +91,10 @@ function accuracy() {
     incorrect: (incorrectWords.length / words.length) * 100,
   }
 
-  fs.writeFileSync("percentages.json", JSON.stringify(percentages, null, 2))
+  fs.writeFileSync(
+    "data/percentages.json",
+    JSON.stringify(percentages, null, 2)
+  )
 
   function getNumGuesses(amount: number) {
     return Object.values(numGuessesMap).filter((guesses) => guesses === amount)
@@ -105,7 +111,7 @@ function accuracy() {
   }
 
   fs.writeFileSync(
-    "distribution.json",
+    "data/distribution.json",
     JSON.stringify(numGuessesDistribution, null, 2)
   )
 }
