@@ -1,26 +1,32 @@
 // Check to see how accurate the solver is.
-// import words from "./five_letter_words.json"
+import words from "./five_letter_words.json"
 import { WordleSolver } from "./wordleSolver"
+import fs from "fs"
 
-const words = ["agara"]
-
-function getIndicesOf(answer: string, letter: string) {
-  const regex = new RegExp(letter, "gi")
-  let result: RegExpExecArray | null = null
-  const indices: number[] = []
-  while ((result = regex.exec(answer))) {
-    indices.push(result.index)
-  }
-  return indices
-}
 // loop through each letter in guess
 // see if the letter is present in the answer
 // AND that it's not in that specific index.
-function getIncorrectPositions(
-  answer: string,
-  guess: string,
-  correct: string
-) {}
+function getIncorrectPosition(answer: string, guess: string) {
+  let incorrect = ""
+  const letterOccurence: { [letter: string]: number } = {}
+
+  for (let i = 0; i < guess.length; i++) {
+    const letter = guess[i]
+    const numOccurences =
+      answer.match(new RegExp(letter, "g") || [])?.length || 1
+    if (answer.includes(letter)) {
+      letterOccurence[letter] = (letterOccurence[letter] ?? 0) + 1
+      if (answer[i] !== letter) {
+        if (numOccurences > 1) {
+          incorrect += `${letter}${letterOccurence[letter]} `
+        } else {
+          incorrect += `${letter} `
+        }
+      }
+    }
+  }
+  return incorrect
+}
 
 function getCorrect(answer: string, guess: string) {
   let correct = ""
@@ -33,7 +39,7 @@ function getCorrect(answer: string, guess: string) {
       answer.match(new RegExp(letter, "g") || [])?.length || 1
     if (answer[i] === letter) {
       if (numOccurences > 1) {
-        letterOccurence[letter] = letterOccurence[letter] + 1 || 1
+        letterOccurence[letter] = (letterOccurence[letter] ?? 0) + 1
         correct += `${letter}${letterOccurence[letter]} `
       } else {
         correct += `${letter} `
@@ -44,21 +50,64 @@ function getCorrect(answer: string, guess: string) {
 }
 
 function accuracy() {
-  // words the solver gets right.
-  const correctWords: string[] = []
   // words the solver gets wrong.
   // Helps to see what it trips up on
   // to improve logic.
   const incorrectWords: string[] = []
+  // this shows all the correct words and how many guesses it took for each.
   let numGuessesMap: { [key: string]: number } = {}
+  for (let i = 0; i < words.length; i++) {
+    const wordle = new WordleSolver()
+    const answer = words[i]
+    let correct = getCorrect(answer, wordle.suggestion)
+    let incorrectPosition = getIncorrectPosition(answer, wordle.suggestion)
+    wordle.addGuess({ guess: wordle.suggestion, correct, incorrectPosition })
 
-  const guess = "agash"
+    while (!wordle.correct && wordle.numGuesses < 7) {
+      correct = getCorrect(answer, wordle.suggestion)
+      incorrectPosition = getIncorrectPosition(answer, wordle.suggestion)
+      wordle.addGuess({ guess: wordle.suggestion, correct, incorrectPosition })
+    }
 
-  const answer = "aralb"
+    if (answer === wordle.suggestion) {
+      numGuessesMap[answer] = wordle.numGuesses
+    } else {
+      incorrectWords.push(answer)
+    }
+  }
 
-  let correct = getCorrect(answer, guess)
+  fs.writeFileSync("numGuesses.json", JSON.stringify(numGuessesMap, null, 2))
 
-  console.log(correct)
+  fs.writeFileSync(
+    "incorrectWords.json",
+    JSON.stringify(incorrectWords, null, 2)
+  )
+
+  const percentages = {
+    correct: (Object.keys(numGuessesMap).length / words.length) * 100,
+    incorrect: (incorrectWords.length / words.length) * 100,
+  }
+
+  fs.writeFileSync("percentages.json", JSON.stringify(percentages, null, 2))
+
+  function getNumGuesses(amount: number) {
+    return Object.values(numGuessesMap).filter((guesses) => guesses === amount)
+      .length
+  }
+
+  const numGuessesDistribution = {
+    one: getNumGuesses(1),
+    two: getNumGuesses(2),
+    three: getNumGuesses(3),
+    four: getNumGuesses(4),
+    five: getNumGuesses(5),
+    six: getNumGuesses(6),
+  }
+
+  fs.writeFileSync(
+    "distribution.json",
+    JSON.stringify(numGuessesDistribution, null, 2)
+  )
 }
 
 accuracy()

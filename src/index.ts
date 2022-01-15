@@ -32,7 +32,7 @@ async function main() {
   // }[]
   const solver = new WordleSolver()
   solver.outputSuggestionToConsole()
-  while (!solver.correct && solver.numGuesses < 6) {
+  while (!solver.correct && solver.numGuesses < 7) {
     let input = (await inquirer.prompt(prompts)) as UserInput
 
     let feedback = solver.addGuess(input)

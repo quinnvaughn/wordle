@@ -15,7 +15,7 @@ export class WordleSolver {
   private _wordsLeft: Word[]
   private _notUsedLetters: string[] = []
   private _usedLettersWrongPosition: Index[] = []
-  private _numGuesses: number = 0
+  private _numGuesses: number = 1
   private _lettersInPosition: [
     string | null,
     string | null,
@@ -191,7 +191,7 @@ export class WordleSolver {
     )
     const formattedCorrect = inputFormatter.formatCorrect(correct, guess)
 
-    if (formattedCorrect === Commands.all) {
+    if (formattedCorrect === Commands.all || formattedCorrect.length === 5) {
       this.userWon()
       return { type: "ok" }
     }
