@@ -9,6 +9,10 @@ export type Word = {
   weight: number
 }
 
+export type UserInputValidation =
+  | { type: "ok" }
+  | { type: "error"; message: string }
+
 export type Index = {
   index: number
   letter: string

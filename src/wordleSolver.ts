@@ -1,14 +1,15 @@
 import { Commands } from "./commands"
+import { InputFormatter } from "./inputformatter"
+import { InputValidator } from "./inputvalidator"
 import type {
   Index,
   Word,
   UserInput,
   FormattedCorrect,
   FormattedIncorrectPosition,
+  UserInputValidation,
 } from "./types"
 import weightedWords from "./words_with_weights.json"
-
-type UserInputValidation = { type: "ok" } | { type: "error"; message: string }
 
 export class WordleSolver {
   private _wordsLeft: Word[]
@@ -172,149 +173,23 @@ export class WordleSolver {
     this._wordsLeft.length === 1 && this.userWon()
   }
 
-  private getPos(word: string, letter: string, occurence: number) {
-    return word.split(letter, occurence).join(letter).length
-  }
-
-  private formatCorrect(word: string, guess: string): FormattedCorrect {
-    return word === Commands.none
-      ? Commands.none
-      : word === Commands.all
-      ? Commands.all
-      : word
-          .split(" ")
-          .filter(Boolean)
-          .map((val) =>
-            val.length === 2
-              ? {
-                  letter: val[0],
-                  index: this.getPos(guess, val[0], Number(val[1])),
-                }
-              : { letter: val, index: this.getPos(guess, val, 1) }
-          )
-  }
-
-  private formatIncorrectPosition(
-    word: string,
-    guess: string
-  ): FormattedIncorrectPosition {
-    return word === Commands.none
-      ? Commands.none
-      : word
-          .split(" ")
-          .filter(Boolean)
-          .map((val) =>
-            val.length === 2
-              ? {
-                  letter: val[0],
-                  index: this.getPos(guess, val[0], Number(val[1])),
-                }
-              : { letter: val, index: this.getPos(guess, val, 1) }
-          )
-  }
-
-  private incorrectLetterChecker(
-    type: "wrong" | "right",
-    usedString: string,
-    guess: string
-  ): UserInputValidation {
-    if (usedString === Commands.all || usedString === Commands.none)
-      return { type: "ok" }
-    const incorrectLetters: string[] = []
-    usedString.split(" ").forEach((letter) => {
-      if (!guess.includes(letter)) incorrectLetters.push(letter)
-    })
-    if (incorrectLetters.length > 0) {
-      const plural = incorrectLetters.length === 1 ? "letter" : "letters"
-      return {
-        type: "error",
-        message: `Guess does not contain ${plural} ${incorrectLetters.join(
-          ","
-        )} in used ${type === "wrong" ? "but incorrect" : "and correct"} spot.`,
-      }
-    }
-    return { type: "ok" }
-  }
-
-  private letterLengthChecker(usedString: string): UserInputValidation {
-    let tooLongOfLetter: string = ""
-
-    usedString.split(" ").every((letter) => {
-      if (
-        letter.length !== 1 &&
-        letter !== Commands.all &&
-        letter !== Commands.none
-      ) {
-        tooLongOfLetter = letter
-        return false
-      }
-      return true
-    })
-    if (tooLongOfLetter.length > 0) {
-      return {
-        type: "error",
-        message: `${tooLongOfLetter} is not a letter. Make sure to put spaces between letters.`,
-      }
-    } else {
-      return { type: "ok" }
-    }
-  }
-
-  private checkInputErrors({
-    guess,
-    correct,
-    incorrectPosition,
-  }: UserInput): UserInputValidation {
-    if (guess.length !== 5) {
-      return { type: "error", message: "Guess must be 5 letters." }
-    }
-    const incorrectLetterWrong = this.letterLengthChecker(incorrectPosition)
-    if (incorrectLetterWrong.type === "error") {
-      return incorrectLetterWrong
-    }
-    const incorrectLetterRight = this.letterLengthChecker(correct)
-    if (incorrectLetterRight.type === "error") {
-      return incorrectLetterRight
-    }
-    const incorrectUsedWrong = this.incorrectLetterChecker(
-      "wrong",
-      incorrectPosition,
-      guess
-    )
-    if (incorrectUsedWrong.type === "error") {
-      return incorrectUsedWrong
-    }
-    const incorrectUsedRight = this.incorrectLetterChecker(
-      "right",
-      correct,
-      guess
-    )
-    if (incorrectUsedRight.type === "error") {
-      return incorrectUsedRight
-    }
-    return { type: "ok" }
-  }
-
-  public addGuess({
-    guess,
-    correct,
-    incorrectPosition,
-  }: UserInput): UserInputValidation {
-    // error checking
-    // const errorCheck = this.checkInputErrors({
-    //   guess,
-    //   correct,
-    //   incorrectPosition,
-    // })
+  public addGuess(input: UserInput): UserInputValidation {
+    // get everything in lowercase
+    const inputFormatter = new InputFormatter()
+    const formattedInput = inputFormatter.lowercaseInput(input)
+    const { guess, incorrectPosition, correct } = formattedInput
+    // const inputValidator = new InputValidator(formattedInput)
+    // // error checking
+    // const errorCheck = inputValidator.checkInputErrors()
     // if (errorCheck.type === "error") {
     //   return errorCheck
     // }
     // get correct format for incorrectPosition and correct
-    const formattedIncorrectPosition = this.formatIncorrectPosition(
+    const formattedIncorrectPosition = inputFormatter.formatIncorrectPosition(
       incorrectPosition,
       guess
     )
-    const formattedCorrect = this.formatCorrect(correct, guess)
+    const formattedCorrect = inputFormatter.formatCorrect(correct, guess)
 
     if (formattedCorrect === Commands.all) {
       this.userWon()

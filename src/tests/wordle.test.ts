@@ -1,5 +1,5 @@
-import type { Word } from "./types"
-import { WordleSolver } from "./wordleSolver"
+import type { Word } from "../types"
+import { WordleSolver } from "../wordleSolver"
 
 let fakeWeights: Word[] = []
 
@@ -75,105 +75,6 @@ describe("Wordle Solver", () => {
         { index: 3, letter: "o" },
         { index: 2, letter: "o" },
       ])
-    })
-  })
-  describe("Input errors", () => {
-    test("returns error object on incorrect length guess", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "bingbong",
-        correct: "",
-        incorrectPosition: "",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "Guess must be 5 letters."
-      )
-    })
-
-    test("returns error object on letter not in used wrong", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "",
-        incorrectPosition: "l",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "Guess does not contain letter l in used but incorrect spot."
-      )
-    })
-
-    test("returns error object on letters (plural) not in used wrong", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "",
-        incorrectPosition: "l o",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "Guess does not contain letters l,o in used but incorrect spot."
-      )
-    })
-
-    test("returns error object on letter not in used right", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "l",
-        incorrectPosition: "",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "Guess does not contain letter l in used and correct spot."
-      )
-    })
-
-    test("returns error object on letters (plural) not in used right", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "l o",
-        incorrectPosition: "",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "Guess does not contain letters l,o in used and correct spot."
-      )
-    })
-
-    test("solver returns error object on too long of letter in used wrong (ie as instead of a)", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "",
-        incorrectPosition: "as",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "as is not a letter. Make sure to put spaces between letters."
-      )
-    })
-
-    test("solver returns error object on too long of letter in used right (ie as instead of a)", () => {
-      const solver = new WordleSolver(fakeWeights)
-      const feedback = solver.addGuess({
-        guess: "guess",
-        correct: "as",
-        incorrectPosition: "",
-      })
-
-      expect(feedback.type).toBe("error")
-      expect((feedback as { type: "error"; message: string }).message).toBe(
-        "as is not a letter. Make sure to put spaces between letters."
-      )
     })
   })
 
