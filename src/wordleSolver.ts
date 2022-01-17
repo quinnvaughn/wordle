@@ -154,8 +154,17 @@ export class WordleSolver {
   private updateSuggestion() {
     const regex = new RegExp(this._notUsedLetters.join("|"), "i")
     const filteredWords = this._wordsLeft.filter((word) => {
+      // this prevents screwing up the situation where
+      // you pick a word that has the same letters as your
+      // first suggestion.
+      // ie suggestion = arose answer = aeros
+      const shouldTest = this._notUsedLetters.length > 0
+      let doesNotUseNotUsedLetters: boolean = true
+      if (shouldTest) {
+        doesNotUseNotUsedLetters = !regex.test(word.word)
+      }
       return (
-        !regex.test(word.word) &&
+        doesNotUseNotUsedLetters &&
         this._usedLettersWrongPosition.every((value) =>
           this.wordIncluesLetterAndIsInDifferentLocation(word.word, value)
         ) &&
