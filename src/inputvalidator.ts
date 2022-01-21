@@ -14,7 +14,15 @@ export class InputValidator {
   private _correct: string
   private _numberLetters: NumberLetter[] = []
 
-  constructor(input: UserInput) {
+  constructor(input?: UserInput) {
+    if (input) {
+      this._guess = input.guess
+      this._incorrectPosition = input.incorrectPosition
+      this._correct = input.correct
+    }
+  }
+
+  public addInput(input: UserInput) {
     this._guess = input.guess
     this._incorrectPosition = input.incorrectPosition
     this._correct = input.correct

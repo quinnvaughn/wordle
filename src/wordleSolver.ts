@@ -25,10 +25,18 @@ export class WordleSolver {
   ] = [null, null, null, null, null]
   private _correct: boolean = false
   private _suggestion: string
+  private _formatter: InputFormatter
+  private _validator: InputValidator
 
-  constructor(words: Word[] = weightedWords) {
+  constructor(
+    words: Word[] = weightedWords,
+    formatter = new InputFormatter(),
+    validator = new InputValidator()
+  ) {
     this._wordsLeft = words
     this._suggestion = this._wordsLeft[0].word
+    this._formatter = formatter
+    this._validator = validator
   }
 
   get correct() {
@@ -184,9 +192,9 @@ export class WordleSolver {
 
   public addGuess(input: UserInput): UserInputValidation {
     // get everything in lowercase
-    const inputFormatter = new InputFormatter()
-    const formattedInput = inputFormatter.lowercaseInput(input)
+    const formattedInput = this._formatter.lowercaseInput(input)
     const { guess, incorrectPosition, correct } = formattedInput
+    // redoing input validation so holding off on this.
     // const inputValidator = new InputValidator(formattedInput)
     // // error checking
     // const errorCheck = inputValidator.checkInputErrors()
@@ -194,11 +202,11 @@ export class WordleSolver {
     //   return errorCheck
     // }
     // get correct format for incorrectPosition and correct
-    const formattedIncorrectPosition = inputFormatter.formatIncorrectPosition(
+    const formattedIncorrectPosition = this._formatter.formatIncorrectPosition(
       incorrectPosition,
       guess
     )
-    const formattedCorrect = inputFormatter.formatCorrect(correct, guess)
+    const formattedCorrect = this._formatter.formatCorrect(correct, guess)
 
     if (formattedCorrect === Commands.all || formattedCorrect.length === 5) {
       this.userWon()
