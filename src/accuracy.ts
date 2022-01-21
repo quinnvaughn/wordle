@@ -63,7 +63,7 @@ function accuracy() {
     let incorrectPosition = getIncorrectPosition(answer, wordle.suggestion)
     wordle.addGuess({ guess: wordle.suggestion, correct, incorrectPosition })
 
-    while (!wordle.correct && wordle.numGuesses < 7) {
+    while (!wordle.correct && wordle.numGuesses < 6) {
       correct = getCorrect(answer, wordle.suggestion)
       incorrectPosition = getIncorrectPosition(answer, wordle.suggestion)
       wordle.addGuess({ guess: wordle.suggestion, correct, incorrectPosition })
