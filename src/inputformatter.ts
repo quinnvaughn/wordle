@@ -1,17 +1,12 @@
 import { Commands } from "./commands"
-import {
-  FormattedCorrect,
-  FormattedIncorrectPosition,
-  Index,
-  UserInput,
-} from "./types"
+import { FormattedGreen, FormattedYellow, Index, UserInput } from "./types"
 
 export class InputFormatter {
   public lowercaseInput(input: UserInput): UserInput {
     return {
-      correct: input.correct.toLowerCase(),
+      green: input.green.toLowerCase(),
       guess: input.guess.toLowerCase(),
-      incorrectPosition: input.incorrectPosition.toLowerCase(),
+      yellow: input.yellow.toLowerCase(),
     }
   }
 
@@ -19,7 +14,7 @@ export class InputFormatter {
     return word.split(letter, occurence).join(letter).length
   }
 
-  public formatCorrect(word: string, guess: string): FormattedCorrect {
+  public formatGreen(word: string, guess: string): FormattedGreen {
     return word === Commands.none
       ? Commands.none
       : word === Commands.all
@@ -41,10 +36,7 @@ export class InputFormatter {
       )
   }
 
-  public formatIncorrectPosition(
-    word: string,
-    guess: string
-  ): FormattedIncorrectPosition {
+  public formatYellow(word: string, guess: string): FormattedYellow {
     return word === Commands.none
       ? Commands.none
       : this.mapStringToIndexes(word, guess)

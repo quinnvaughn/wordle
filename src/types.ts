@@ -1,7 +1,7 @@
 export type UserInput = {
   guess: string
-  incorrectPosition: string
-  correct: string
+  yellow: string
+  green: string
 }
 
 export type Word = {
@@ -18,6 +18,6 @@ export type Index = {
   letter: string
 }
 
-export type FormattedCorrect = "none" | "all" | Index[]
+export type FormattedGreen = "none" | "all" | Index[]
 
-export type FormattedIncorrectPosition = "none" | Index[]
+export type FormattedYellow = "none" | Index[]

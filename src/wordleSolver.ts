@@ -5,18 +5,18 @@ import type {
   Index,
   Word,
   UserInput,
-  FormattedCorrect,
-  FormattedIncorrectPosition,
   UserInputValidation,
+  FormattedYellow,
+  FormattedGreen,
 } from "./types"
 import weightedWords from "./words_with_weights.json"
 
 export class WordleSolver {
   private _wordsLeft: Word[]
   private _notUsedLetters: string[] = []
-  private _usedLettersWrongPosition: Index[] = []
+  private _yellow: Index[] = []
   private _numGuesses: number = 1
-  private _lettersInPosition: [
+  private _green: [
     string | null,
     string | null,
     string | null,
@@ -52,11 +52,11 @@ export class WordleSolver {
   }
 
   get usedLettersWrongPosition() {
-    return this._usedLettersWrongPosition
+    return this._yellow
   }
 
   get lettersInPosition() {
-    return this._lettersInPosition
+    return this._green
   }
 
   get suggestion() {
@@ -131,8 +131,8 @@ export class WordleSolver {
     // array already contains letter.
     if (
       this._notUsedLetters.includes(letter) ||
-      this._usedLettersWrongPosition.some((wp) => wp.letter === letter) ||
-      this._lettersInPosition.includes(letter)
+      this._yellow.some((wp) => wp.letter === letter) ||
+      this._green.includes(letter)
     ) {
       return
     } else {
@@ -144,18 +144,14 @@ export class WordleSolver {
     const indexToLocation = index > 5 || index < 0 ? "undefined" : index
 
     if (typeof indexToLocation === "undefined") return
-    this._lettersInPosition[indexToLocation as number] = letter
+    this._green[indexToLocation as number] = letter
   }
 
   private addUsedLetterWrongPosition(letter: string, index: number) {
-    if (
-      this._usedLettersWrongPosition.some(
-        (wp) => wp.index === index && wp.letter === letter
-      )
-    ) {
+    if (this._yellow.some((wp) => wp.index === index && wp.letter === letter)) {
       return
     } else {
-      this._usedLettersWrongPosition.push({ letter, index })
+      this._yellow.push({ letter, index })
     }
   }
 
@@ -173,10 +169,10 @@ export class WordleSolver {
       }
       return (
         doesNotUseNotUsedLetters &&
-        this._usedLettersWrongPosition.every((value) =>
+        this._yellow.every((value) =>
           this.wordIncluesLetterAndIsInDifferentLocation(word.word, value)
         ) &&
-        this._lettersInPosition.every((letter, index) =>
+        this._green.every((letter, index) =>
           this.letterInCorrectSpot(word.word, letter, index)
         )
       )
@@ -193,7 +189,7 @@ export class WordleSolver {
   public addGuess(input: UserInput): UserInputValidation {
     // get everything in lowercase
     const formattedInput = this._formatter.lowercaseInput(input)
-    const { guess, incorrectPosition, correct } = formattedInput
+    const { guess, yellow, green } = formattedInput
     // redoing input validation so holding off on this.
     // const inputValidator = new InputValidator(formattedInput)
     // // error checking
@@ -202,34 +198,31 @@ export class WordleSolver {
     //   return errorCheck
     // }
     // get correct format for incorrectPosition and correct
-    const formattedIncorrectPosition = this._formatter.formatIncorrectPosition(
-      incorrectPosition,
-      guess
-    )
-    const formattedCorrect = this._formatter.formatCorrect(correct, guess)
+    const formattedYellow = this._formatter.formatYellow(yellow, guess)
+    const formattedGreen = this._formatter.formatGreen(green, guess)
 
-    if (formattedCorrect === Commands.all || formattedCorrect.length === 5) {
+    if (formattedGreen === Commands.all || formattedGreen.length === 5) {
       this.userWon()
       return { type: "ok" }
     }
-    this.loopThroughLetters(guess, formattedIncorrectPosition, formattedCorrect)
+    this.loopThroughLetters(guess, formattedYellow, formattedGreen)
     return { type: "ok" }
   }
 
   private loopThroughLetters(
     guess: string,
-    FormattedIncorrectPosition: FormattedIncorrectPosition,
-    FormattedCorrect: FormattedCorrect
+    formattedYellow: FormattedYellow,
+    formattedGreen: FormattedGreen
   ) {
     guess.split("").forEach((letter, index) => {
       let inArray = false
       let wrongPosition = false
       if (
-        FormattedIncorrectPosition !== Commands.none &&
-        FormattedIncorrectPosition.some(
+        formattedYellow !== Commands.none &&
+        formattedYellow.some(
           (val) => val.letter === letter && val.index === index
         ) &&
-        this._lettersInPosition.filter(
+        this._green.filter(
           (lip, lipIndex) => lip === letter && lipIndex === index
         ).length === 0
       ) {
@@ -238,9 +231,9 @@ export class WordleSolver {
         wrongPosition = true
       }
       if (
-        FormattedCorrect !== Commands.none &&
-        FormattedCorrect !== Commands.all &&
-        FormattedCorrect.some(
+        formattedGreen !== Commands.none &&
+        formattedGreen !== Commands.all &&
+        formattedGreen.some(
           (val) => val.letter === letter && val.index === index
         ) &&
         !wrongPosition

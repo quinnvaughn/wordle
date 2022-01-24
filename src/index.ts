@@ -13,13 +13,13 @@ const prompts = [
   { type: "input", name: "guess", message: "What is your guess?" },
   {
     type: "input",
-    name: "incorrectPosition",
-    message: "Which letters are in the incorrect position?",
+    name: "yellow",
+    message: "Which letters are yellow?",
   },
   {
     type: "input",
-    name: "correct",
-    message: "Which letters are correct?",
+    name: "green",
+    message: "Which letters are green?",
   },
 ]
 
@@ -42,7 +42,7 @@ async function main() {
       input = (await inquirer.prompt(prompts)) as UserInput
       feedback = solver.addGuess(input)
     }
-    if (input.correct !== Commands.all || solver.oneWordLeft()) {
+    if (input.green !== Commands.all || solver.oneWordLeft()) {
       solver.outputSuggestionToConsole()
     }
   }

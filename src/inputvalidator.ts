@@ -1,7 +1,7 @@
 import { Commands } from "./commands"
 import { UserInput, UserInputValidation } from "./types"
 
-type InputOption = "guess" | "incorrect" | "correct"
+type InputOption = "guess" | "yellow" | "green"
 
 type NumberLetter = {
   numberLetter: string
@@ -10,22 +10,22 @@ type NumberLetter = {
 
 export class InputValidator {
   private _guess: string
-  private _incorrectPosition: string
-  private _correct: string
+  private _yellow: string
+  private _green: string
   private _numberLetters: NumberLetter[] = []
 
   constructor(input?: UserInput) {
     if (input) {
       this._guess = input.guess
-      this._incorrectPosition = input.incorrectPosition
-      this._correct = input.correct
+      this._yellow = input.yellow
+      this._green = input.green
     }
   }
 
   public addInput(input: UserInput) {
     this._guess = input.guess
-    this._incorrectPosition = input.incorrectPosition
-    this._correct = input.correct
+    this._yellow = input.yellow
+    this._green = input.green
   }
 
   private containsNumber(type: InputOption) {
@@ -186,9 +186,7 @@ export class InputValidator {
         type: "error",
         message: `Guess does not contain ${plural} ${incorrectLetters.join(
           ","
-        )} in used ${
-          type === "incorrect" ? "but incorrect" : "and correct"
-        } spot.`,
+        )} in used ${type === "yellow" ? "but incorrect" : "and green"} spot.`,
       }
     }
     return { type: "ok" }
@@ -197,9 +195,9 @@ export class InputValidator {
   private getWordFromType(type: InputOption) {
     return type === "guess"
       ? this._guess
-      : type === "incorrect"
-      ? this._incorrectPosition
-      : this._correct
+      : type === "yellow"
+      ? this._yellow
+      : this._green
   }
 
   private getNumberLetters(type: InputOption): NumberLetter[] {
@@ -248,11 +246,10 @@ export class InputValidator {
     if (guessHasNumbers) {
       return { type: "error", message: "Guess cannot contain numbers." }
     }
-    const incorrectPositionHasNumbers =
-      this.containsNumber("incorrect") &&
-      !this.containsNumberLetters("incorrect")
+    const yellowContainsNumbers =
+      this.containsNumber("yellow") && !this.containsNumberLetters("yellow")
 
-    if (incorrectPositionHasNumbers) {
+    if (yellowContainsNumbers) {
       return {
         type: "error",
         message:
@@ -260,47 +257,47 @@ export class InputValidator {
       }
     }
 
-    const correctHasNumbers =
-      this.containsNumber("correct") && !this.containsNumberLetters("correct")
+    const greenContainsNumbers =
+      this.containsNumber("green") && !this.containsNumberLetters("green")
 
-    if (correctHasNumbers) {
+    if (greenContainsNumbers) {
       return {
         type: "error",
         message:
-          "Correct cannot contain numbers unless to specify which of a same letter.",
+          "Green cannot contain numbers unless to specify which of a same letter.",
       }
     }
 
     const usedSameLetterInIncorrect =
-      this.userUsedSameLetterMultipleTimesInString("incorrect")
+      this.userUsedSameLetterMultipleTimesInString("yellow")
 
     if (usedSameLetterInIncorrect.type === "error") {
       return usedSameLetterInIncorrect
     }
 
     const usedSameLetterInCorrect =
-      this.userUsedSameLetterMultipleTimesInString("correct")
+      this.userUsedSameLetterMultipleTimesInString("green")
 
     if (usedSameLetterInCorrect.type === "error") {
       return usedSameLetterInCorrect
     }
 
     const didNotSpecifyOccurence = this.userDidNotSpecifyWhichOccurence(
-      "incorrect",
-      "correct"
+      "yellow",
+      "green"
     )
 
     if (didNotSpecifyOccurence.type === "error") {
       return didNotSpecifyOccurence
     }
 
-    const incorrectOutOfBounds = this.numberLettersOutOfBounds("incorrect")
+    const incorrectOutOfBounds = this.numberLettersOutOfBounds("yellow")
 
     if (incorrectOutOfBounds.type === "error") {
       return incorrectOutOfBounds
     }
 
-    const correctOutOfBounds = this.numberLettersOutOfBounds("correct")
+    const correctOutOfBounds = this.numberLettersOutOfBounds("green")
 
     if (correctOutOfBounds.type === "error") {
       return correctOutOfBounds
@@ -309,19 +306,19 @@ export class InputValidator {
     if (this._guess.length !== 5) {
       return { type: "error", message: "Guess must be 5 letters." }
     }
-    const incorrectLetterWrong = this.letterLengthChecker("incorrect")
+    const incorrectLetterWrong = this.letterLengthChecker("yellow")
     if (incorrectLetterWrong.type === "error") {
       return incorrectLetterWrong
     }
-    const incorrectLetterRight = this.letterLengthChecker("correct")
+    const incorrectLetterRight = this.letterLengthChecker("green")
     if (incorrectLetterRight.type === "error") {
       return incorrectLetterRight
     }
-    const incorrectUsedWrong = this.incorrectLetterChecker("incorrect")
+    const incorrectUsedWrong = this.incorrectLetterChecker("yellow")
     if (incorrectUsedWrong.type === "error") {
       return incorrectUsedWrong
     }
-    const incorrectUsedRight = this.incorrectLetterChecker("correct")
+    const incorrectUsedRight = this.incorrectLetterChecker("green")
     if (incorrectUsedRight.type === "error") {
       return incorrectUsedRight
     }
